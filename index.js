@@ -1,8 +1,16 @@
 const express = require('express');
 const bodyParser = require('body-parser');
-const fs = require('fs');
+const fs = require('fs').promises;
+/* const { json } = require('body-parser'); */
 const generateToken = require('./utils/generateToken');
-const { validateEmail, validatePassword } = require('./middleware/validation');
+const { validateEmail, 
+  validatePassword, 
+  validateToken, 
+  validadteAge, 
+  validateName, 
+  validateTalk, 
+  validateRate,
+  validateDate } = require('./middleware/validation');
 
 const app = express();
 app.use(bodyParser.json());
@@ -11,22 +19,27 @@ const HTTP_OK_STATUS = 200;
 const PORT = '3000';
 
 function getTalker() {
-  return fs.readFileSync('./talker.json', 'utf-8');
+  return fs.readFile('./talker.json', 'utf-8')
+  .then((file) => JSON.parse(file));
+}
+
+async function setTalker(newTalker) {
+  return fs.writeFile('./talker.json', JSON.stringify(newTalker));
 }
 
 // REQ 1
-app.get('/talker', (req, res) => {
-  const talker = getTalker();
+app.get('/talker', async (_req, res) => {
+  const talker = await getTalker();
 
   if (!talker) return res.status(200).json({});
 
-  return res.status(200).json(JSON.parse(talker));
+  return res.status(200).json(talker);
 });
 
 // REQ 2
-app.get('/talker/:id', (req, res) => {
+app.get('/talker/:id', async (req, res) => {
   const { id } = req.params;
-  const talker = JSON.parse(getTalker());
+  const talker = await getTalker();
    
   const filteredTalker = talker.find((p) => p.id === +id);
 
@@ -45,6 +58,25 @@ app.post('/login', validatePassword, validateEmail, (_req, res) => {
   return res.status(200).json({ token });
 });
 
+// REQ 4
+app.post('/talker',
+validateToken,  
+validadteAge, 
+validateName, 
+validateTalk,
+validateRate,
+validateDate, 
+ async (req, res) => {
+   const { name, age, talk } = req.body;
+
+   const talkerList = await getTalker();
+  
+   talkerList.push({ id: talkerList.length + 1, name, age, talk });
+
+   await setTalker(talkerList);
+
+  return res.status(201).json({ id: talkerList.length, name, age, talk });
+});
 // não remova esse endpoint, e para o avaliador 
 
 app.get('/', (_request, response) => {
