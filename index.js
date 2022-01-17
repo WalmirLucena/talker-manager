@@ -102,6 +102,17 @@ validateDate,
   return res.status(200).json(talkerList[selectedIndex]);
 });
 
+// Req 6 
+
+app.delete('/talker/:id', validateToken, async (req, res) => {
+  const { id } = req.params;
+  const talkerList = await getTalker();
+  const selectedIndex = talkerList.findIndex((talker) => talker.id === +id);
+  talkerList.splice(selectedIndex, 1);
+  await setTalker(talkerList);
+  return res.status(204).end();
+});
+
 // não remova esse endpoint, e para o avaliador 
 
 app.get('/', (_request, response) => {
