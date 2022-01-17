@@ -6,7 +6,7 @@ const generateToken = require('./utils/generateToken');
 const { validateEmail, 
   validatePassword, 
   validateToken, 
-  validadteAge, 
+  validateAge, 
   validateName, 
   validateTalk, 
   validateRate,
@@ -61,7 +61,7 @@ app.post('/login', validatePassword, validateEmail, (_req, res) => {
 // REQ 4
 app.post('/talker',
 validateToken,  
-validadteAge, 
+validateAge, 
 validateName, 
 validateTalk,
 validateRate,
@@ -77,6 +77,31 @@ validateDate,
 
   return res.status(201).json({ id: talkerList.length, name, age, talk });
 });
+
+// REQ 5
+
+app.put('/talker/:id', 
+validateToken, 
+validateName, 
+validateAge,
+validateTalk,
+validateRate,
+validateDate, 
+ async (req, res) => {
+   const { id } = req.params;
+  const { name, age, talk } = req.body;
+
+  const talkerList = await getTalker();
+
+  const selectedIndex = talkerList.findIndex((talker) => talker.id === +id);
+
+  talkerList[selectedIndex] = { ...talkerList[selectedIndex], name, age, talk };
+
+   await setTalker(talkerList);
+
+  return res.status(200).json(talkerList[selectedIndex]);
+});
+
 // não remova esse endpoint, e para o avaliador 
 
 app.get('/', (_request, response) => {
