@@ -1,3 +1,4 @@
+/* eslint-disable no-undef */
 const express = require('express');
 const bodyParser = require('body-parser');
 const fs = require('fs').promises;
@@ -111,6 +112,18 @@ app.delete('/talker/:id', validateToken, async (req, res) => {
   talkerList.splice(selectedIndex, 1);
   await setTalker(talkerList);
   return res.status(204).end();
+});
+
+// Req 7
+
+app.get('/talker/search', validateToken, async (req, res) => {
+  const { q } = req.query;
+  const talkerList = await getTalker();
+
+  const findTalker = talkerList.filter(
+    (t) => t.name.toLowerCase().includes(q.toLowerCase()),
+);
+ return res.status(200).json(findTalker);
 });
 
 // não remova esse endpoint, e para o avaliador 
