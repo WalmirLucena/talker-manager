@@ -1,8 +1,6 @@
-/* eslint-disable no-undef */
 const express = require('express');
 const bodyParser = require('body-parser');
 const fs = require('fs').promises;
-/* const { json } = require('body-parser'); */
 const generateToken = require('./utils/generateToken');
 const { validateEmail, 
   validatePassword, 
@@ -27,6 +25,18 @@ function getTalker() {
 async function setTalker(newTalker) {
   return fs.writeFile('./talker.json', JSON.stringify(newTalker));
 }
+
+// Req 7 Mudando de ordem para não cair no endpoint errado
+
+app.get('/talker/search', validateToken, async (req, res) => {
+  const { q } = req.query;
+  const talkerList = await getTalker();
+
+  const findTalker = talkerList.filter(
+    (t) => t.name.includes(q),
+);
+ return res.status(200).json(findTalker);
+});
 
 // REQ 1
 app.get('/talker', async (_req, res) => {
@@ -112,18 +122,6 @@ app.delete('/talker/:id', validateToken, async (req, res) => {
   talkerList.splice(selectedIndex, 1);
   await setTalker(talkerList);
   return res.status(204).end();
-});
-
-// Req 7
-
-app.get('/talker/search', validateToken, async (req, res) => {
-  const { q } = req.query;
-  const talkerList = await getTalker();
-
-  const findTalker = talkerList.filter(
-    (t) => t.name.toLowerCase().includes(q.toLowerCase()),
-);
- return res.status(200).json(findTalker);
 });
 
 // não remova esse endpoint, e para o avaliador 
